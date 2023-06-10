@@ -1,22 +1,22 @@
-import { BigInt,Address } from "@graphprotocol/graph-ts"
+import { BigInt,Address, Bytes } from "@graphprotocol/graph-ts"
 import {
   ItemBought as ItemBoughtEvent,
   ItemCancelled as ItemCancelledEvent,
   ItemListed as ItemListedEvent
 } from "../generated/NftMarketPlace/NftMarketPlace"
 import { ItemBought, ItemCancelled, ItemListed,ActiveItem } from "../generated/schema"
-// event.transaction.hash.concatI32(event.logIndex.toI32())
+// getIdFromEventParams(event.params.tokenId, event.params.nftAddress)
 
 export function handleItemBought(event: ItemBoughtEvent): void {
   let itemBought = ItemBought.load(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    getIdFromEventParams(event.params.tokenId, event.params.nftAddress)
   )
   let activeItem = ActiveItem.load(
-  event.transaction.hash.concatI32(event.logIndex.toI32())
+  getIdFromEventParams(event.params.tokenId, event.params.nftAddress)
   )
   if (!itemBought) {
       itemBought = new ItemBought(
-        event.transaction.hash.concatI32(event.logIndex.toI32())
+        getIdFromEventParams(event.params.tokenId, event.params.nftAddress)
       )
   }
   itemBought.buyer = event.params.buyer
@@ -30,16 +30,16 @@ export function handleItemBought(event: ItemBoughtEvent): void {
 
 export function handleItemCancelled(event: ItemCancelledEvent): void {
   let itemCanceled = ItemCancelled.load(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    getIdFromEventParams(event.params.tokenId, event.params.nftAddress)
    
   )
   let activeItem = ActiveItem.load(
-  event.transaction.hash.concatI32(event.logIndex.toI32())
+  getIdFromEventParams(event.params.tokenId, event.params.nftAddress)
 
   ) 
   if (!itemCanceled) {
       itemCanceled = new ItemCancelled(
-        event.transaction.hash.concatI32(event.logIndex.toI32())
+        getIdFromEventParams(event.params.tokenId, event.params.nftAddress)
 
       )
   }
@@ -51,25 +51,24 @@ export function handleItemCancelled(event: ItemCancelledEvent): void {
   itemCanceled.save()
   activeItem!.save()
 }
-
 export function handleItemListed(event: ItemListedEvent): void {
   let itemListed = ItemListed.load(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    getIdFromEventParams(event.params.tokenId, event.params.nftAddress)
 
   )
   let activeItem = ActiveItem.load(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    getIdFromEventParams(event.params.tokenId, event.params.nftAddress)
 
   )
   if (!itemListed) {
      itemListed = new ItemListed(
-        event.transaction.hash.concatI32(event.logIndex.toI32())
+        getIdFromEventParams(event.params.tokenId, event.params.nftAddress)
 
       )
   }
   if (!activeItem) {
       activeItem = new ActiveItem(
-        event.transaction.hash.concatI32(event.logIndex.toI32())
+        getIdFromEventParams(event.params.tokenId, event.params.nftAddress)
 
       )
   }
@@ -89,4 +88,7 @@ export function handleItemListed(event: ItemListedEvent): void {
 
   itemListed.save()
   activeItem.save()
+}
+function getIdFromEventParams(tokenId: BigInt, nftAddress: Address): string {
+  return tokenId.toHexString() + nftAddress.toHexString()
 }
